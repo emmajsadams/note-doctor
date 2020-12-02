@@ -24,23 +24,8 @@ interface SearchQuery {
 // TODO: validate all metadata is present (including preventing / in name)
 // TODO: migrate dates
 export default async function search(query: SearchQuery): Promise<Note[]> {
-	let notes = await getNotes('/tasks')
-	// TODO parameterize search
-	// NOTE: replace with notes.filter
-	// let output: Note[] = jsonQuery('notes[*priority=Urgent]', {
-	// 	data: notes,
-	// }).value
-	// notes = notes.filter((note) => {
-	// 	if (query.priority && query.priority.includes(note.priority)) {
-	// 		return true
-	// 	}
-
-	// 	return false
-	// })
-	// notes = notes.sort(custom_sort)
-
 	// TODO: sort by date asc, but show no date after dates
-	notes = await nSQL(notes)
+	const notes = await nSQL(await getNotes('/tasks'))
 		.query('select')
 		.where(['priority', 'IN', query.priorities])
 		.orderBy({ priority: 'asc', status: 'asc' })
@@ -48,22 +33,6 @@ export default async function search(query: SearchQuery): Promise<Note[]> {
 
 	return Promise.resolve(notes)
 }
-
-// // TODO: also sort by title, category, status like notion
-// function custom_sort(a: Note, b: Note) {
-// 	if (a.priority !== b.priority) {
-// 		const aPriorityIndex = PRIORITIES.indexOf(a.priority)
-// 		const bPriorityIndex = PRIORITIES.indexOf(b.priority)
-
-// 		return aPriorityIndex - bPriorityIndex
-// 	}
-
-// 	if (a.due !== null && b.due === null) {
-// 		return -1
-// 	}
-
-// 	return new Date(a.due).getTime() - new Date(b.due).getTime()
-// }
 
 function formatTitle(title: string): string {
 	return chalk.blue.bold(title)
@@ -106,9 +75,7 @@ function formatStatus(status: Status): string {
 // TODO: use cli output colors
 // TODO: add argument for base path
 export function formatSearch(notes: Note[]): string {
-	let output = []
-
-	console.log('formatSearch')
+	const output = []
 
 	for (const note of notes) {
 		let outputLine = formatTitle(note.title)
