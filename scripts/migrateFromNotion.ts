@@ -1,19 +1,19 @@
+import arg from 'arg'
 import bluebird from 'bluebird'
 import childProcess from 'child_process'
 import fs from 'fs'
 import lineReader from 'line-reader'
 import moment from 'moment'
 import util from 'util'
-import config from '../config'
 
 const exec = util.promisify(childProcess.exec)
 const eachLine = bluebird.promisify(lineReader.eachLine)
 
 // TODO: write some way to validate all properties present and bail out if not valid
-export default async function migrateFromNotion(): Promise<void> {
-	const notionExportPaths = (
-		await exec(`ls ${config.notesDir}/**/*.md`)
-	).stdout.split('\n')
+export default async function migrateFromNotion(
+	notesDir: string,
+): Promise<void> {
+	const notionExportPaths = (await exec(`ls ${notesDir}`)).stdout.split('\n')
 
 	for (const notionExportPath of notionExportPaths) {
 		let newFilePath = ''
@@ -52,6 +52,7 @@ export default async function migrateFromNotion(): Promise<void> {
 				.replace('Due:', 'due:')
 				.replace('Priority:', 'priority:')
 				.replace('Attachments:', 'attachments:')
+				.replace('Assign:', 'assign:')
 
 			if (line.startsWith('due:')) {
 				const date = line.replace('due: ', '')
@@ -76,5 +77,14 @@ export default async function migrateFromNotion(): Promise<void> {
 }
 
 ;(async () => {
-	await migrateFromNotion()
+	const args = arg({
+		// Types
+		'--notes': String,
+	})
+
+	if (!args['--notes']) {
+		throw new Error('no notes specified')
+	}
+
+	await migrateFromNotion(args['--notes'])
 })()
