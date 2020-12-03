@@ -1,220 +1,149 @@
-import { nSQL } from '@nano-sql/core'
-import arg from 'arg'
-import chalk from 'chalk'
-import { formatRelative } from 'date-fns'
-import marked from 'marked'
-import markedTerminal from 'marked-terminal'
-import Note from '../types/Note'
+import { program } from 'commander'
+import formatSearch from '../lib/formatSearch'
+import search from '../lib/search'
+import Category from '../types/Category'
 import NoteProperty from '../types/NoteProperty'
 import Priority from '../types/Priority'
+import SearchQuery from '../types/SearchQuery'
 import Status from '../types/Status'
-import getNotes from './getNotes'
 
-const MAX_DATE = new Date(8640000000000000)
+// TODO: document valid priorities in error
+function collectCategory(value, previous) {
+	const category = Category[value.toLowerCase()]
+	if (category === undefined) {
+		throw new Error(`Invalid category specified: ${value}`)
+	}
 
-marked.setOptions({
-	// Define custom renderer
-	renderer: new markedTerminal(),
-})
-
-interface SearchQuery {
-	dates: Date[]
-	priorities: Priority[]
-	categories: string[]
-	statuses: Status[]
+	return previous.concat([category])
 }
 
-// TODO: validate all metadata is present (including preventing / in name)
-// TODO: migrate dates
-export default async function search(
-	notesGlob: string,
-	query: SearchQuery,
-): Promise<Note[]> {
-	let notes = await getNotes(notesGlob)
-
-	// We need to add max dates to all tasks so that the ordering works correctly.
-	for (const note of notes) {
-		if (!note.due) {
-			note.due = MAX_DATE
-		}
-	}
-	console.log(query.priorities)
-
-	// TODO: sort by date asc, but show no date after dates
-	notes = (await nSQL(notes)
-		.query('select')
-		.where(['priority', 'IN', query.priorities])
-		.orderBy(['due ASC', 'priority ASC', 'status ASC'])
-		.exec()) as any
-
-	// Remove the max dates after sorting. As a performance boost I could move this step to the formatting
-	// stage. However the scale of notes is very small.
-	for (const note of notes) {
-		if (note.due === MAX_DATE) {
-			note.due = null
-		}
+// TODO: document valid priorities in error
+function collectPriority(value, previous) {
+	const priority = Priority[value.toLowerCase()]
+	if (priority === undefined) {
+		throw new Error(`Invalid priority specified: ${value}`)
 	}
 
-	return Promise.resolve(notes)
+	return previous.concat([priority])
 }
 
-function formatTitle(note: Note): string {
-	return chalk.blue.bold(note.title)
+// TODO: document valid priorities in error
+function collectStatus(value, previous) {
+	const status = Status[value.toLowerCase()]
+	if (status === undefined) {
+		throw new Error(`Invalid status specified: ${value}`)
+	}
+
+	return previous.concat([status])
 }
 
-function formatDue(note: Note): string {
-	if (!(note.due instanceof Date)) {
-		throw new Error('due is not a date')
+// TODO: document valid priorities in error
+function collectNoteProperty(value, previous) {
+	const noteProperty = NoteProperty[value.toLowerCase()]
+	if (!noteProperty) {
+		throw new Error(`Invalid status specified: ${value}`)
 	}
 
-	return formatRelative(note.due, new Date())
+	return previous.concat([noteProperty])
 }
 
-function formatPriority(note: Note): string {
-	const stringPriority = Priority[note.priority]
-
-	if (stringPriority === 'urgent') {
-		return chalk.redBright(stringPriority)
-	}
-
-	if (stringPriority === 'high') {
-		return chalk.yellowBright(stringPriority)
-	}
-
-	if (stringPriority === 'low') {
-		return chalk.greenBright(stringPriority)
-	}
-
-	throw new Error(`Invalid or missing priority: ${stringPriority}`)
+function getDate(value) {
+	return new Date(value)
 }
 
-function formatCategory(note: Note): string {
-	return note.category
-}
-
-function formatStatus(note: Note): string {
-	const stringStatus = Status[note.status]
-
-	if (stringStatus === 'todo') {
-		return chalk.blueBright(stringStatus)
-	}
-
-	if (stringStatus === 'inprogress') {
-		return chalk.greenBright(stringStatus)
-	}
-
-	if (stringStatus === 'blocked') {
-		return chalk.redBright(stringStatus)
-	}
-
-	throw new Error(`Invalid or missing status: ${stringStatus}`)
-}
-
-function formatBody(note: Note): string {
-	if (!note.body) {
-		throw new Error('no body')
-	}
-
-	return marked(note.body)
-}
-
-const notePropertyFormatDict = {
-	[NoteProperty.title]: formatTitle,
-	[NoteProperty.due]: formatDue,
-	[NoteProperty.priority]: formatPriority,
-	[NoteProperty.category]: formatCategory,
-	[NoteProperty.status]: formatStatus,
-	[NoteProperty.body]: formatBody,
-}
-
-// TODO: add rest of properties and file url
-// TODO: use natural date output
-// TODO: use cli output colors
-// TODO: add argument for base path
-export function formatSearch(
-	notes: Note[],
-	noteProperties: NoteProperty[],
-): string {
-	const output = []
-
-	for (const note of notes) {
-		// Simple one line display for a single property
-		if (noteProperties.length == 1) {
-			output.push(notePropertyFormatDict[noteProperties[0]](note))
-			continue
-		}
-
-		// Multi property `---` separated output
-		let outputLine = '---'
-		for (const noteProperty of noteProperties) {
-			try {
-				const formattedNoteProperty = notePropertyFormatDict[noteProperty](note)
-				outputLine += `\n${noteProperty}: ${formattedNoteProperty}`
-			} catch (e) {
-				continue
-			}
-		}
-		output.push(outputLine)
-	}
-
-	output.push('---')
-
-	return output.join('\n')
-}
-
-// TODO: remove this. only for testing
-// TODO: lower case search args
 ;(async () => {
-	// end and start date are inclusive. together they can create a range, or separate they can ignore dates in the future/past a certain date
-	const args = arg({
-		'--notes': String,
-		'--end-date': String,
-		'--start-date': String,
-		'--priority': [String],
-		'--category': [String],
-		'--status': [String],
-		'--property': [String],
-	})
+	// TODO: keep version in sync with package.json
+	program
+		.version('0.1.0')
+		.description(
+			'A tool for searching markdown files. Results are sorted ascending by date, priority, status, category.',
+		)
+		.requiredOption(
+			'-n, --notes <value>',
+			'required ls glob pattern of the markdown files to search',
+		)
+		.option(
+			'-p, --priority <value>',
+			'A repeatable argument representing which priorities to focus the search on. If none specified then all priorities are shown',
+			collectPriority,
+			[],
+		)
+		.option(
+			'-c, --category <value>',
+			'A repeatable argument representing which categories to focus the search on. If none specified then all categories are shown',
+			collectCategory,
+			[],
+		)
+		.option(
+			'-s, --status <value>',
+			'A repeatable argument representing which statuses to focus the search on. If none specified then all statuses are shown',
+			collectStatus,
+			[],
+		)
+		.option(
+			'-r, --property <value>',
+			'A repeatable argument representing which properties to display. If none specified then all properties are shown',
+			collectNoteProperty,
+			[],
+		)
+		.option(
+			'-e, --end-date <value>',
+			'An inclusive end date to focus the search on. If none specified then the end date is the max date',
+			getDate,
+		)
+		.option(
+			'-a, --start-date <value>',
+			'An inclusive start date to focus the search on. If none specified then the start date is the min date',
+			getDate,
+		)
+		.on('--help', () => {
+			console.log('')
+			console.log('Example call:')
+			console.log(
+				"  $ yarn run search --notes '../notes/tasks/*.md' --property title --property due --category home --category finance",
+			)
+		})
 
-	if (!args['--notes']) {
-		throw new Error('no notes specified')
-	}
+	program.parse(process.argv)
 
 	const query: SearchQuery = {
-		priorities: [Priority.urgent, Priority.high, Priority.low],
-		dates: [],
-		categories: [],
-		statuses: [Status.todo, Status.inprogress, Status.blocked],
-	}
-	if (args['--status']) {
-		query.statuses = []
-		for (const arg of args['--status']) {
-			query.statuses.push(Status[arg.toLowerCase()] as any)
-		}
-	}
-	if (args['--priority']) {
-		query.priorities = []
-		for (const arg of args['--priority']) {
-			query.priorities.push(Priority[arg.toLowerCase()] as any)
-		}
-	}
-
-	let noteProperties = [
-		NoteProperty.title,
-		NoteProperty.due,
-		NoteProperty.priority,
-		NoteProperty.category,
-		NoteProperty.status,
-		NoteProperty.body,
-	]
-	if (args['--property']) {
-		noteProperties = []
-		for (const arg of args['--property']) {
-			noteProperties.push(NoteProperty[arg.toLowerCase()])
-		}
+		priorities:
+			program.priority.length == 0
+				? [Priority.urgent, Priority.high, Priority.low]
+				: program.priority,
+		endDate: program.endDate || new Date(8640000000000000),
+		startDate: program.startDate || new Date(-8640000000000000),
+		categories:
+			program.category.length == 0
+				? [
+						Category.health,
+						Category.academics,
+						Category.career,
+						Category.finance,
+						Category.legal,
+						Category.home,
+						Category.social,
+						Category.hobby,
+						Category.general,
+				  ]
+				: program.category,
+		statuses:
+			program.status.length == 0
+				? [Status.todo, Status.inprogress, Status.blocked]
+				: program.status,
 	}
 
-	console.log(
-		formatSearch(await search(args['--notes'], query), noteProperties),
-	)
+	const noteProperties =
+		program.property.length == 0
+			? [
+					NoteProperty.title,
+					NoteProperty.due,
+					NoteProperty.priority,
+					NoteProperty.category,
+					NoteProperty.status,
+					NoteProperty.body,
+			  ]
+			: program.property
+
+	console.log(formatSearch(await search(program.notes, query), noteProperties))
 })()
