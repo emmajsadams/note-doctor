@@ -38,10 +38,12 @@ export default async function getNotes(notesGlob: string): Promise<Note[]> {
 			title,
 			url: notePath,
 			category: noteFrontMatter.attributes.category,
-			priority: Priority[noteFrontMatter.attributes.priority],
+			priority: Priority[noteFrontMatter.attributes.priority.toLowerCase()],
 			status:
 				Status[
-					noteFrontMatter.attributes.status.replace('In Progress', 'InProgress')
+					noteFrontMatter.attributes.status
+						.replace('In Progress', 'InProgress')
+						.toLowerCase()
 				],
 			due: getDate(noteFrontMatter.attributes.due),
 			body: noteFrontMatter.body,
