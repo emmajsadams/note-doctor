@@ -11,6 +11,7 @@
 		"search": "ts-node ./scripts/search.ts"
 	},
 	"dependencies": {
+		"@nano-sql/core": "2.3.7",
 		"arg": "5.0.0",
 		"bluebird": "3.7.2",
 		"chalk": "4.1.0",
@@ -20,7 +21,6 @@
 		"marked": "1.2.5",
 		"marked-terminal": "4.1.0",
 		"moment": "2.29.1",
-		"nano-sql": "1.8.5",
 		"ts-node": "9.0.0",
 		"typescript": "4.0.3"
 	},
