@@ -2,6 +2,7 @@ import childProcess from 'child_process'
 import fm from 'front-matter'
 import fs from 'fs'
 import util from 'util'
+import Category from '../types/Category'
 import Note from '../types/Note'
 import NoteFrontMatter from '../types/NoteFrontMatter'
 import Priority from '../types/Priority'
@@ -37,13 +38,12 @@ export default async function getNotes(notesGlob: string): Promise<Note[]> {
 		notes.push({
 			title,
 			url: notePath,
-			category: noteFrontMatter.attributes.category,
+			category: Category[noteFrontMatter.attributes.category.toLowerCase()],
 			priority: Priority[noteFrontMatter.attributes.priority.toLowerCase()],
+			// remove whitespace for status since "in progress" might be a status
 			status:
 				Status[
-					noteFrontMatter.attributes.status
-						.replace('In Progress', 'InProgress')
-						.toLowerCase()
+					noteFrontMatter.attributes.status.replace(' ', '').toLowerCase()
 				],
 			due: getDate(noteFrontMatter.attributes.due),
 			body: noteFrontMatter.body,
