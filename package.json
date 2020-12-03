@@ -8,7 +8,7 @@
 		"format": "eslint * --fix --no-error-on-unmatched-pattern && prettier --write *",
 		"lint": "eslint --no-error-on-unmatched-pattern * && prettier --check *",
 		"migrate-from-notion": "ts-node ./scripts/migrateFromNotion.ts",
-		"search": "ts-node ./scripts/search.ts"
+		"search": "deno ./scripts/search.ts"
 	},
 	"dependencies": {
 		"arg": "5.0.0",

@@ -1,4 +1,4 @@
-import arg from 'arg'
+import * as arg from 'arg'
 import bluebird from 'bluebird'
 import childProcess from 'child_process'
 import fs from 'fs'
@@ -77,7 +77,7 @@ export default async function migrateFromNotion(
 }
 
 ;(async () => {
-	const args = arg({
+	const args = arg.default({
 		'--notes': String,
 	})
 

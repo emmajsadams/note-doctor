@@ -1,5 +1,5 @@
-import Status from '../types/Status'
-import Priority from './Priority'
+import Status from '../types/Status.ts'
+import Priority from './Priority.ts'
 
 export default interface Note {
 	title: string

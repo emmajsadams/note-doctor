@@ -1,7 +1,7 @@
 enum Status {
-	Todo = 0,
-	InProgress = 1,
-	Blocked = 2,
+	Todo,
+	InProgress,
+	Blocked,
 }
 
 export default Status
