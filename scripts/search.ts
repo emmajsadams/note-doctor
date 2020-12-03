@@ -77,10 +77,15 @@ function formatStatus(status: Status): string {
 // TODO: use natural date output
 // TODO: use cli output colors
 // TODO: add argument for base path
-export function formatSearch(notes: Note[]): string {
+export function formatSearch(notes: Note[], titleOnly: Boolean): string {
 	const output = []
 
 	for (const note of notes) {
+		if (titleOnly) {
+			output.push(note.title)
+			continue
+		}
+
 		let outputLine = formatTitle(note.title)
 
 		if (note.due instanceof Date) {
@@ -94,10 +99,11 @@ export function formatSearch(notes: Note[]): string {
 		if (note.body) {
 			outputLine += `\n\n${marked(note.body)}`
 		}
+		outputLine += '\n---'
 		output.push(outputLine)
 	}
 
-	return output.join('\n---\n')
+	return output.join('\n')
 }
 
 // TODO: remove this. only for testing
@@ -105,6 +111,7 @@ export function formatSearch(notes: Note[]): string {
 ;(async () => {
 	const args = arg({
 		'--notes': String,
+		'--title-only': Boolean,
 		'--date': [String],
 		'--priority': [String],
 		'--category': [String],
@@ -136,5 +143,7 @@ export function formatSearch(notes: Note[]): string {
 		}
 	}
 
-	console.log(formatSearch(await search(args['--notes'], query)))
+	console.log(
+		formatSearch(await search(args['--notes'], query), args['--title-only']),
+	)
 })()
