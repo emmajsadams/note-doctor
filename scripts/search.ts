@@ -23,9 +23,12 @@ interface SearchQuery {
 
 // TODO: validate all metadata is present (including preventing / in name)
 // TODO: migrate dates
-export default async function search(query: SearchQuery): Promise<Note[]> {
+export default async function search(
+	notesGlob: string,
+	query: SearchQuery,
+): Promise<Note[]> {
 	// TODO: sort by date asc, but show no date after dates
-	const notes = await nSQL(await getNotes('/tasks'))
+	const notes = await nSQL(await getNotes(notesGlob))
 		.query('select')
 		.where(['priority', 'IN', query.priorities])
 		.orderBy({ priority: 'asc', status: 'asc' })
@@ -101,12 +104,17 @@ export function formatSearch(notes: Note[]): string {
 // TODO: lower case search args
 ;(async () => {
 	const args = arg({
-		// Types
+		'--notes': String,
 		'--date': [String],
 		'--priority': [String],
 		'--category': [String],
 		'--status': [String],
 	})
+
+	if (!args['--notes']) {
+		throw new Error('no notes specified')
+	}
+
 	const query: SearchQuery = {
 		priorities: [Priority.Urgent, Priority.High, Priority.Low],
 		dates: [],
@@ -128,5 +136,5 @@ export function formatSearch(notes: Note[]): string {
 		}
 	}
 
-	console.log(formatSearch(await search(query)))
+	console.log(formatSearch(await search(args['--notes'], query)))
 })()

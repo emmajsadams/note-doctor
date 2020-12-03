@@ -11,9 +11,9 @@ const eachLine = bluebird.promisify(lineReader.eachLine)
 
 // TODO: write some way to validate all properties present and bail out if not valid
 export default async function migrateFromNotion(
-	notesDir: string,
+	notesGlob: string,
 ): Promise<void> {
-	const notionExportPaths = (await exec(`ls ${notesDir}`)).stdout.split('\n')
+	const notionExportPaths = (await exec(`ls ${notesGlob}`)).stdout.split('\n')
 
 	for (const notionExportPath of notionExportPaths) {
 		let newFilePath = ''
@@ -78,7 +78,6 @@ export default async function migrateFromNotion(
 
 ;(async () => {
 	const args = arg({
-		// Types
 		'--notes': String,
 	})
 
