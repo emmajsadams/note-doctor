@@ -74,6 +74,7 @@ export function formatStatus(note: Note): string {
 	throw new Error(`Invalid or missing status: ${stringStatus}`)
 }
 
+// TODO: trim the length of body and double end spaceing
 export function formatBody(note: Note): string {
 	if (!note.body) {
 		throw new Error('no body')
