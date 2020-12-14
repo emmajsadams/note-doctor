@@ -28,6 +28,9 @@ export default async function sendEmail(): Promise<void> {
 
 	sgMail.setApiKey(noteDoctorConfig.sendGridAPIKey)
 
+	// Pull latest note doctor changes
+	console.log(await (await exec(`git pull`)).stdout)
+
 	// Update all note repos
 	for (const noteRepo of noteDoctorConfig.noteRepos) {
 		console.log(await (await exec(`cd ${noteRepo} && git pull`)).stdout)
