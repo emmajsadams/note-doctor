@@ -42,7 +42,7 @@ export default async function sendEmail(): Promise<void> {
 		endDate.setDate(endDate.getDate() + 7)
 		const noteProperties = [NoteProperty.title, NoteProperty.due]
 		const dueNotes = await search(emailRecipient.notesPath, {
-			startDate: new Date(8640000000000000),
+			startDate: new Date(-8640000000000000),
 			endDate,
 			categories: [
 				Category.health,
@@ -60,7 +60,7 @@ export default async function sendEmail(): Promise<void> {
 		})
 		const urgentNotes = await search(emailRecipient.notesPath, {
 			endDate: new Date(8640000000000000),
-			startDate: new Date(-8630000000000000),
+			startDate: new Date(-8640000000000000),
 			categories: [
 				Category.health,
 				Category.academics,
@@ -81,7 +81,7 @@ export default async function sendEmail(): Promise<void> {
 ${formatSearch(dueNotes, noteProperties, false)}
 `
 		} else {
-			text += 'No notes due in the next seven days!\n\n'
+			text += 'No notes past due or due in the next seven days!\n\n'
 		}
 
 		if (urgentNotes.length > 0) {
