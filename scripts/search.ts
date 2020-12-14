@@ -104,9 +104,15 @@ function getDate(value) {
 				"  $ yarn run search --notes '../notes/tasks/*.md' --property title --property due --category home --category finance",
 			)
 			console.log('\nExample noteDoctorConfig.json')
-			console.log(`{
-	"notesPath": "../notes/tasks/*.md"
-}`)
+			console.log(
+				JSON.stringify(
+					{
+						notesPath: '../notes/tasks/*.md ../family-notes/tasks/*.md',
+					},
+					null,
+					2,
+				),
+			)
 		})
 
 	program.parse(process.argv)
@@ -156,5 +162,7 @@ function getDate(value) {
 			  ]
 			: program.property
 
-	console.log(formatSearch(await search(notesPath, query), noteProperties))
+	console.log(
+		formatSearch(await search(notesPath, query), noteProperties, true),
+	)
 })()
