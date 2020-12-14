@@ -29,10 +29,10 @@ export default async function search(
 			['status', 'IN', query.statuses],
 			'AND',
 			['category', 'IN', query.categories],
-			// 'AND',
-			// ['date', '<=', query.endDate],
-			// 'AND',
-			// ['date', '>=', query.startDate],
+			'AND',
+			['due', '<=', query.endDate],
+			'AND',
+			['due', '>=', query.startDate],
 		])
 		.orderBy(['due ASC', 'priority ASC', 'status ASC', 'category ASC'])
 		.exec()) as any

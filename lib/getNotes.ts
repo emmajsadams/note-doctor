@@ -13,7 +13,7 @@ const exec = util.promisify(childProcess.exec)
 
 // TODO: validate all metadata is present (including preventing / in name)
 export default async function getNotes(notesGlob: string): Promise<Note[]> {
-	const notePaths = await (await exec(`ls ${notesGlob}`)).stdout.split('\n')
+	const notePaths = (await exec(`ls ${notesGlob}`)).stdout.split('\n')
 
 	const notes: Note[] = []
 	for (const notePath of notePaths) {
