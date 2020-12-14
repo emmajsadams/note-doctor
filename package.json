@@ -8,10 +8,12 @@
 		"format": "eslint * --fix --no-error-on-unmatched-pattern && prettier --write *",
 		"lint": "eslint --no-error-on-unmatched-pattern * && prettier --check *",
 		"migrate-from-notion": "ts-node ./scripts/migrateFromNotion.ts",
-		"search": "ts-node ./scripts/search.ts"
+		"search": "ts-node ./scripts/search.ts",
+		"send-daily-digest": "ts-node ./scripts/sendDailyDigest.ts"
 	},
 	"dependencies": {
 		"@nano-sql/core": "2.3.7",
+		"@sendgrid/mail": "7.4.0",
 		"bluebird": "3.7.2",
 		"chalk": "4.1.0",
 		"commander": "6.2.0",
