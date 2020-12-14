@@ -79,14 +79,18 @@ export default async function sendEmail(): Promise<void> {
 		if (dueNotes.length > 0) {
 			text += `# Notes past due and due in the next seven days
 ${formatSearch(dueNotes, noteProperties, false)}
+
 `
 		} else {
 			text += 'No notes past due or due in the next seven days!\n\n'
 		}
 
+		text += '############################\n############################'
+
 		if (urgentNotes.length > 0) {
 			text += `# Urgent notes
 ${formatSearch(urgentNotes, noteProperties, false)}
+
 `
 		} else {
 			text += 'No urgent notes!\n\n'
