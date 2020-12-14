@@ -1,5 +1,7 @@
 import { program } from 'commander'
+import fs from 'fs'
 import formatSearch from '../lib/formatSearch'
+import getNoteDoctorConfig from '../lib/getNoteDoctorConfig'
 import search from '../lib/search'
 import Category from '../types/Category'
 import NoteProperty from '../types/NoteProperty'
@@ -52,13 +54,13 @@ function getDate(value) {
 }
 
 ;(async () => {
-	// TODO: keep version in sync with package.json
+	const packageJSON = JSON.parse(fs.readFileSync('package.json', 'utf-8'))
 	program
-		.version('0.1.0')
+		.version(packageJSON.version)
 		.description(
-			'A tool for searching markdown files. Results are sorted ascending by date, priority, status, category.',
+			'A tool for searching markdown files. Results are sorted ascending by date, priority, status, category. Configured by cli or by a noteDoctorConfig.json file in root. See help for more information on config file',
 		)
-		.requiredOption(
+		.option(
 			'-n, --notes <value>',
 			'required ls glob pattern of the markdown files to search',
 		)
@@ -97,14 +99,23 @@ function getDate(value) {
 			getDate,
 		)
 		.on('--help', () => {
-			console.log('')
-			console.log('Example call:')
+			console.log('\nExample call:')
 			console.log(
 				"  $ yarn run search --notes '../notes/tasks/*.md' --property title --property due --category home --category finance",
 			)
+			console.log('\nExample noteDoctorConfig.json')
+			console.log(`{
+	"notesPath": "../notes/tasks/*.md"
+}`)
 		})
 
 	program.parse(process.argv)
+	const noteDoctorConfig = getNoteDoctorConfig()
+
+	const notesPath = noteDoctorConfig.notesPath || program.notes
+	if (!notesPath) {
+		throw new Error('no notesPath defined in config or cli')
+	}
 
 	const query: SearchQuery = {
 		priorities:
@@ -145,5 +156,5 @@ function getDate(value) {
 			  ]
 			: program.property
 
-	console.log(formatSearch(await search(program.notes, query), noteProperties))
+	console.log(formatSearch(await search(notesPath, query), noteProperties))
 })()

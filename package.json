@@ -1,6 +1,6 @@
 {
 	"name": "notes.doctor",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"repository": "https://gitlab.com/EmmaJCline/notes-doctor",
 	"author": "Emma Cline <emma@cline.engineer>",
 	"private": false,
