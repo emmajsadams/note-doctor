@@ -85,7 +85,7 @@ ${formatSearch(dueNotes, noteProperties, false)}
 			text += 'No notes past due or due in the next seven days!\n\n'
 		}
 
-		text += '############################\n############################'
+		text += '############################\n############################\n\n'
 
 		if (urgentNotes.length > 0) {
 			text += `# Urgent notes
