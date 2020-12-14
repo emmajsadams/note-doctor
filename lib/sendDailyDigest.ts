@@ -98,7 +98,7 @@ ${formatSearch(urgentNotes, noteProperties, false)}
 
 		await sgMail.send({
 			to: emailRecipient.email, // Change to your recipient
-			from: 'emma@cline.engineer', // Change to your verified sender
+			from: 'notedoctor@cline.engineer', // Change to your verified sender
 			subject: 'NoteDoctor Daily Digest',
 			text,
 		})
