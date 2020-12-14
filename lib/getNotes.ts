@@ -22,21 +22,25 @@ export default async function getNotes(notesGlob: string): Promise<Note[]> {
 			continue
 		}
 
-		const title = notePath.split('/').pop().replace('.md', '')
+		const fileName = notePath.split('/').pop().replace('.md', '')
 		const noteFrontMatter = fm<NoteFrontMatter>(
 			fs.readFileSync(notePath, 'utf8'),
 		)
 
 		if (!noteFrontMatter.attributes.priority) {
-			throw new Error(`${title} has no priority`)
+			throw new Error(`${fileName} has no priority`)
 		}
 
 		if (!noteFrontMatter.attributes.status) {
-			throw new Error(`${title} has no status`)
+			throw new Error(`${fileName} has no status`)
+		}
+
+		if (!noteFrontMatter.attributes.category) {
+			throw new Error(`${fileName} has no category`)
 		}
 
 		notes.push({
-			title,
+			title: noteFrontMatter.attributes.title || fileName,
 			url: notePath,
 			category: Category[noteFrontMatter.attributes.category.toLowerCase()],
 			priority: Priority[noteFrontMatter.attributes.priority.toLowerCase()],
