@@ -29,11 +29,11 @@ export default async function sendEmail(): Promise<void> {
 	sgMail.setApiKey(noteDoctorConfig.sendGridAPIKey)
 
 	// Pull latest note doctor changes
-	console.log(await (await exec(`git pull`)).stdout)
+	console.log((await exec(`git pull`)).stdout)
 
 	// Update all note repos
 	for (const noteRepo of noteDoctorConfig.noteRepos) {
-		console.log(await (await exec(`cd ${noteRepo} && git pull`)).stdout)
+		console.log((await exec(`cd ${noteRepo} && git pull`)).stdout)
 	}
 
 	// Send all digest emails
@@ -75,6 +75,19 @@ export default async function sendEmail(): Promise<void> {
 			statuses: [Status.blocked, Status.inprogress, Status.todo],
 			priorities: [Priority.urgent],
 		})
+
+		// Remove duplicate notes between each section preferring due dates for duplicate notes
+		const dueNoteTitles = new Set<string>()
+		for (const dueNote of dueNotes) {
+			dueNoteTitles.add(dueNote.title)
+		}
+		const filteredUrgentNotes = []
+		for (const urgentNote of urgentNotes) {
+			if (!dueNoteTitles.has(urgentNote.title)) {
+				filteredUrgentNotes.push(urgentNote)
+			}
+		}
+
 		let text = ''
 		if (dueNotes.length > 0) {
 			text += `# Notes past due and due in the next seven days
@@ -87,9 +100,9 @@ ${formatSearch(dueNotes, noteProperties, false)}
 
 		text += '############################\n############################\n\n'
 
-		if (urgentNotes.length > 0) {
+		if (filteredUrgentNotes.length > 0) {
 			text += `# Urgent notes
-${formatSearch(urgentNotes, noteProperties, false)}
+${formatSearch(filteredUrgentNotes, noteProperties, false)}
 
 `
 		} else {
