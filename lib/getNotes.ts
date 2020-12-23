@@ -1,7 +1,6 @@
-import childProcess from 'child_process'
 import fm from 'front-matter'
 import fs from 'fs'
-import util from 'util'
+import globby from 'globby'
 import Category from '../types/Category'
 import Note from '../types/Note'
 import NoteFrontMatter from '../types/NoteFrontMatter'
@@ -9,16 +8,14 @@ import Priority from '../types/Priority'
 import Status from '../types/Status'
 import getDate from './getDate'
 
-const exec = util.promisify(childProcess.exec)
-
-// TODO: validate all metadata is present (including preventing / in name)
-export default async function getNotes(notesGlob: string): Promise<Note[]> {
-	const notePaths = (await exec(`ls ${notesGlob}`)).stdout.split('\n')
+export default async function getNotes(notesGlob: string[]): Promise<Note[]> {
+	const notePaths = await globby(notesGlob)
 
 	const notes: Note[] = []
 	for (const notePath of notePaths) {
 		// Remove invalid paths
 		if (notePath === '') {
+			console.log('poop')
 			continue
 		}
 

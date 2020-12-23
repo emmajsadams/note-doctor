@@ -19,6 +19,7 @@
 		"commander": "6.2.0",
 		"date-fns": "2.16.1",
 		"front-matter": "4.0.2",
+		"globby": "11.0.1",
 		"line-reader": "0.4.0",
 		"marked": "1.2.5",
 		"marked-terminal": "4.1.0",

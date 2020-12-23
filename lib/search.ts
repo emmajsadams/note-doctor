@@ -8,7 +8,7 @@ const MAX_DATE = new Date(8640000000000000)
 // TODO: validate all metadata is present (including preventing / in name)
 // TODO: migrate dates
 export default async function search(
-	notesGlob: string,
+	notesGlob: string[],
 	query: SearchQuery,
 ): Promise<Note[]> {
 	let notes = await getNotes(notesGlob)

@@ -8,6 +8,7 @@ import util from 'util'
 const exec = util.promisify(childProcess.exec)
 const eachLine = bluebird.promisify(lineReader.eachLine)
 
+// TODO: probably just delete this or move it to separate branch. I will not maintain it .
 // TODO: write some way to validate all properties present and bail out if not valid
 export default async function migrateFromNotion(
 	notesGlob: string,

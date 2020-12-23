@@ -4,7 +4,7 @@ export default interface NoteDoctorConfig {
 	emailRecipients?: [
 		{
 			email: string
-			notesPath: string
+			notesPath: string[]
 		},
 	]
 	noteRepos?: string[]
