@@ -1,11 +1,12 @@
-import Status from '../types/Status'
+import Category from './Category'
 import Priority from './Priority'
+import Status from './Status'
 
 export default interface Note {
 	title: string
 	url: string
 	due: Date | null
-	category: string
+	category: Category
 	priority: Priority
 	status: Status
 	body: string

@@ -4,14 +4,18 @@ import globby from 'globby'
 import Category from '../types/Category'
 import Note from '../types/Note'
 import NoteFrontMatter from '../types/NoteFrontMatter'
+import NoteSearchResult from '../types/NoteSearchResult'
 import Priority from '../types/Priority'
 import Status from '../types/Status'
 import getDate from './getDate'
 
-export default async function getNotes(notesGlob: string[]): Promise<Note[]> {
+export default async function getNotes(
+	notesGlob: string[],
+): Promise<NoteSearchResult> {
 	const notePaths = await globby(notesGlob)
 
 	const notes: Note[] = []
+	const invalidFiles: string[] = []
 	for (const notePath of notePaths) {
 		// Remove invalid paths
 		if (notePath === '') {
@@ -25,15 +29,18 @@ export default async function getNotes(notesGlob: string[]): Promise<Note[]> {
 		)
 
 		if (!noteFrontMatter.attributes.priority) {
-			throw new Error(`${fileName} has no priority`)
+			invalidFiles.push(`${notePath} has no priority`)
+			continue
 		}
 
 		if (!noteFrontMatter.attributes.status) {
-			throw new Error(`${fileName} has no status`)
+			invalidFiles.push(`${notePath} has no status`)
+			continue
 		}
 
 		if (!noteFrontMatter.attributes.category) {
-			throw new Error(`${fileName} has no category`)
+			invalidFiles.push(`${notePath} has no category`)
+			continue
 		}
 
 		notes.push({
@@ -51,5 +58,8 @@ export default async function getNotes(notesGlob: string[]): Promise<Note[]> {
 		})
 	}
 
-	return Promise.resolve(notes)
+	return Promise.resolve({
+		notes,
+		invalidFiles,
+	})
 }

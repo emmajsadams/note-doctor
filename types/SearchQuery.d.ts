@@ -1,6 +1,6 @@
-import Category from '../types/Category'
-import Priority from '../types/Priority'
-import Status from '../types/Status'
+import Category from './Category'
+import Priority from './Priority'
+import Status from './Status'
 
 export default interface SearchQuery {
 	endDate: Date

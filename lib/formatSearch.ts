@@ -1,10 +1,6 @@
 import Note from '../types/Note'
 import NoteProperty, { NOTE_PROPERTY_FORMAT } from '../types/NoteProperty'
 
-// TODO: add rest of properties and file url
-// TODO: use natural date output
-// TODO: use cli output colors
-// TODO: add argument for base path
 export default function formatSearch(
 	notes: Note[],
 	noteProperties: NoteProperty[],

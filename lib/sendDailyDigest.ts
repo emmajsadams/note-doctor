@@ -41,7 +41,7 @@ export default async function sendEmail(): Promise<void> {
 		const endDate = new Date()
 		endDate.setDate(endDate.getDate() + 7)
 		const noteProperties = [NoteProperty.title, NoteProperty.due]
-		const dueNotes = await search(emailRecipient.notesPath, {
+		const dueNoteSearchResult = await search(emailRecipient.notesPath, {
 			startDate: new Date(-8640000000000000),
 			endDate,
 			categories: [
@@ -58,7 +58,8 @@ export default async function sendEmail(): Promise<void> {
 			statuses: [Status.blocked, Status.inprogress, Status.todo],
 			priorities: [Priority.high, Priority.low, Priority.urgent],
 		})
-		const urgentNotes = await search(emailRecipient.notesPath, {
+		const dueNotes = dueNoteSearchResult.notes
+		const urgentNotesSearchResult = await search(emailRecipient.notesPath, {
 			endDate: new Date(8640000000000000),
 			startDate: new Date(-8640000000000000),
 			categories: [
@@ -75,6 +76,7 @@ export default async function sendEmail(): Promise<void> {
 			statuses: [Status.blocked, Status.inprogress, Status.todo],
 			priorities: [Priority.urgent],
 		})
+		const urgentNotes = urgentNotesSearchResult.notes
 
 		// Remove duplicate notes between each section preferring due dates for duplicate notes
 		const dueNoteTitles = new Set<string>()
@@ -89,6 +91,22 @@ export default async function sendEmail(): Promise<void> {
 		}
 
 		let text = ''
+
+		const invalidFiles = [
+			...new Set(
+				dueNoteSearchResult.invalidFiles.concat(
+					urgentNotesSearchResult.invalidFiles,
+				),
+			),
+		]
+
+		if (invalidFiles.length > 0) {
+			text +=
+				'The following files are invalid and should be fixed so they can be triaged correctly\n\n'
+			text += invalidFiles.join('\n')
+			text += '\n############################\n############################\n\n'
+		}
+
 		if (dueNotes.length > 0) {
 			text += `# Notes past due and due in the next seven days
 ${formatSearch(dueNotes, noteProperties, false)}

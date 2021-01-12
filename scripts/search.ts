@@ -9,41 +9,45 @@ import Priority from '../types/Priority'
 import SearchQuery from '../types/SearchQuery'
 import Status from '../types/Status'
 
-// TODO: document valid priorities in error
 function collectCategory(value, previous) {
 	const category = Category[value.toLowerCase()]
 	if (category === undefined) {
-		throw new Error(`Invalid category specified: ${value}`)
+		throw new Error(
+			`Invalid category specified: ${value}. See types/Category for valid categories.`,
+		)
 	}
 
 	return previous.concat([category])
 }
 
-// TODO: document valid priorities in error
 function collectPriority(value, previous) {
 	const priority = Priority[value.toLowerCase()]
 	if (priority === undefined) {
-		throw new Error(`Invalid priority specified: ${value}`)
+		throw new Error(
+			`Invalid priority specified: ${value}. See types/Priority for valid priorities.`,
+		)
 	}
 
 	return previous.concat([priority])
 }
 
-// TODO: document valid priorities in error
 function collectStatus(value, previous) {
 	const status = Status[value.toLowerCase()]
 	if (status === undefined) {
-		throw new Error(`Invalid status specified: ${value}`)
+		throw new Error(
+			`Invalid status specified: ${value}. See types/Status for valid statuses.`,
+		)
 	}
 
 	return previous.concat([status])
 }
 
-// TODO: document valid priorities in error
 function collectNoteProperty(value, previous) {
 	const noteProperty = NoteProperty[value.toLowerCase()]
 	if (!noteProperty) {
-		throw new Error(`Invalid status specified: ${value}`)
+		throw new Error(
+			`Invalid note property specified: ${value}. See types/NoteProperty for valid note properties.`,
+		)
 	}
 
 	return previous.concat([noteProperty])
@@ -162,7 +166,11 @@ function getDate(value) {
 			  ]
 			: program.property
 
-	console.log(
-		formatSearch(await search(notesPath, query), noteProperties, true),
-	)
+	const { notes, invalidFiles } = await search(notesPath, query)
+
+	if (invalidFiles.length > 0) {
+		throw new Error(invalidFiles.join('\n'))
+	}
+
+	console.log(formatSearch(notes, noteProperties, true))
 })()

@@ -26,7 +26,13 @@ export function formatDue(note: Note, cliColor: boolean): string {
 		throw new Error('due is not a date')
 	}
 
-	return formatRelative(note.due, new Date())
+	const relativeDate = formatRelative(note.due, new Date())
+
+	if (!cliColor) {
+		return relativeDate
+	}
+
+	return chalk.magentaBright(relativeDate)
 }
 
 export function formatPriority(note: Note, cliColor: boolean): string {
@@ -77,6 +83,10 @@ export function formatStatus(note: Note, cliColor: boolean): string {
 export function formatBody(note: Note, cliColor: boolean): string {
 	if (!note.body) {
 		throw new Error('no body')
+	}
+
+	if (!cliColor) {
+		note.body
 	}
 
 	return marked(note.body)

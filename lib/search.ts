@@ -1,19 +1,18 @@
 import { nSQL } from '@nano-sql/core'
 import Note from '../types/Note'
+import NoteSearchResult from '../types/NoteSearchResult'
 import SearchQuery from '../types/SearchQuery'
 import getNotes from './getNotes'
 
 const MAX_DATE = new Date(8640000000000000)
 
-// TODO: validate all metadata is present (including preventing / in name)
-// TODO: migrate dates
 export default async function search(
 	notesGlob: string[],
 	query: SearchQuery,
-): Promise<Note[]> {
-	let notes = await getNotes(notesGlob)
+): Promise<NoteSearchResult> {
+	const notesSearchResult = await getNotes(notesGlob)
+	let notes = notesSearchResult.notes
 
-	// TODO: filter out notes if endDate or startDate is specified
 	// We need to add max dates to all tasks so that the ordering works correctly.
 	for (const note of notes) {
 		if (!note.due) {
@@ -35,7 +34,7 @@ export default async function search(
 			['due', '>=', query.startDate],
 		])
 		.orderBy(['due ASC', 'priority ASC', 'status ASC', 'category ASC'])
-		.exec()) as any
+		.exec()) as Note[]
 
 	// Remove the max dates after sorting. As a performance boost I could move this step to the formatting
 	// stage. However the scale of notes is very small.
@@ -45,5 +44,8 @@ export default async function search(
 		}
 	}
 
-	return Promise.resolve(notes)
+	return Promise.resolve({
+		notes,
+		invalidFiles: notesSearchResult.invalidFiles,
+	})
 }
